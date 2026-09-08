@@ -62,9 +62,21 @@ python3 -m http.server 5500
 npx serve .
 ```
 
-Navigate to `http://localhost:5500/dashboard.html` in your web browser.
+Navigate to `http://localhost:5500/` or `http://localhost:5500/index.html` in your web browser.
 
-### 5. MapTiler Satellite Imagery
+### 5. Deploying to Vercel
+The repository is fully configured for zero-config Vercel deployment:
+- **Repository**: [https://github.com/AnuragTummapudi/controlroom](https://github.com/AnuragTummapudi/controlroom)
+- **Automatic Deployment**:
+  1. Open [Vercel Dashboard](https://vercel.com/new).
+  2. Click **Import** next to `AnuragTummapudi/controlroom`.
+  3. Leave all default settings (Framework Preset: *Other*, Root Directory: `./`).
+  4. Click **Deploy**.
+- **Pre-configured Features**:
+  - `vercel.json` provides MIME type headers (`model/gltf-binary`) for the 32MB Volvo A40G 3D model.
+  - The development MapTiler key is embedded in `config.js` and `index.html` for immediate operation.
+
+### 6. MapTiler Satellite Imagery
 The center radar uses MapTiler's official high-resolution satellite imagery layer:
 ```javascript
 maptilersdk.config.apiKey = window.APP_CONFIG.MAPTILER_API_KEY;
@@ -79,15 +91,15 @@ const map = new maptilersdk.Map({
 });
 ```
 
-### 6. Changing the Bailadila Center & Zoom
+### 7. Changing the Bailadila Center & Zoom
 The default viewport coordinates and camera orientation can be modified directly in [`config.js`](file:///Users/anuragtummapudi/controlroom/config.js):
 - `MAP_CENTER`: `[longitude, latitude]` in decimal degrees (default: `[81.2385, 18.6395]` for Bailadila Deposit 14).
 - `DEFAULT_ZOOM`: Camera elevation scale (default: `14.3`).
 - `DEFAULT_PITCH`: Top-down tilt angle for aerial perspective (default: `25` degrees).
 - `DEFAULT_BEARING`: Compass rotation angle (default: `-15` degrees).
 
-### 7. Vehicle Telemetry & Coordinate Storage
-Vehicle positions, headings, and live telemetry data are maintained in the `assets` array inside [`dashboard.html`](file:///Users/anuragtummapudi/controlroom/dashboard.html#L686-L701):
+### 8. Vehicle Telemetry & Coordinate Storage
+Vehicle positions, headings, and live telemetry data are maintained in the `assets` array inside [`index.html`](file:///Users/anuragtummapudi/controlroom/index.html):
 ```javascript
 {
     id: "AST-10042",
@@ -103,11 +115,11 @@ Vehicle positions, headings, and live telemetry data are maintained in the `asse
 }
 ```
 
-### 8. Haul Routes Storage (GeoJSON)
-Haul road corridors are defined as GeoJSON `LineString` features inside `haulRoutesGeoJSON` in [`dashboard.html`](file:///Users/anuragtummapudi/controlroom/dashboard.html#L790-L850). Routes follow actual surveyed Bailadila haul roads and are rendered using a dual-layer approach (emerald core line + green glow).
+### 9. Haul Routes Storage (GeoJSON)
+Haul road corridors are defined as GeoJSON `LineString` features inside `haulRoutesGeoJSON` in [`index.html`](file:///Users/anuragtummapudi/controlroom/index.html). Routes follow actual surveyed Bailadila haul roads and are rendered using a dual-layer approach (emerald core line + green glow).
 
-### 9. Adding Additional Mining Zones
-New operational zones (Excavation pits, blasting perimeters, stockpile yards) can be added as GeoJSON polygons to `miningZonesGeoJSON` in [`dashboard.html`](file:///Users/anuragtummapudi/controlroom/dashboard.html#L735-L788):
+### 10. Adding Additional Mining Zones
+New operational zones (Excavation pits, blasting perimeters, stockpile yards) can be added as GeoJSON polygons to `miningZonesGeoJSON` in [`index.html`](file:///Users/anuragtummapudi/controlroom/index.html):
 ```javascript
 {
     type: "Feature",
