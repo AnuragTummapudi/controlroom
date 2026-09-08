@@ -954,7 +954,7 @@
             position: relative;
             width: 100%;
             height: 250px;
-            background: radial-gradient(circle at 50% 40%, #28282d 0%, #161618 100%);
+            background: #141416;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--border);
@@ -1060,177 +1060,206 @@
             font-weight: 500;
         }
 
-        /* Real-Time Truck Diagnostics Telemetry Card (Replaces generic thumbnail) */
+        /* Real-Time Truck Diagnostics Telemetry Card - Clean Industrial SCADA */
         .truck-diagnostics-card {
             width: 100%;
-            background: #141416;
-            border: 1px solid #2a2a30;
-            border-left: 3px solid #f59e0b;
-            border-radius: 8px;
-            padding: 14px 16px;
-            margin-bottom: 22px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-            transition: all 0.25s ease;
-            position: relative;
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
         }
 
         .diag-card-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .diag-title-group {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
         }
 
         .diag-unit-id {
-            font-size: 16px;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: 0.5px;
-            font-family: Inter, -apple-system, sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.3px;
         }
 
         .diag-callsign {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--muted);
-            font-weight: 500;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         }
 
-        .diag-status-pill {
-            margin-left: auto;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 3px 9px;
-            border-radius: 12px;
+        .diag-status-tag {
             font-size: 11px;
             font-weight: 700;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
-        .diag-status-pill.warning {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.35);
+        .diag-status-tag.warning {
+            color: #f59e0b;
         }
 
-        .diag-status-pill.normal {
-            background: rgba(34, 197, 94, 0.15);
-            color: #4ade80;
-            border: 1px solid rgba(34, 197, 94, 0.35);
+        .diag-status-tag.normal {
+            color: #22c55e;
         }
 
-        .diag-status-pill.danger {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.35);
-        }
-
-        .diag-pulse-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-            animation: diagPulse 1.5s infinite;
-        }
-
-        @keyframes diagPulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.35; transform: scale(0.85); }
+        .diag-status-tag.danger {
+            color: #ef4444;
         }
 
         .diag-card-body {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 6px;
         }
 
         .diag-row {
             display: flex;
-            align-items: baseline;
+            align-items: center;
             justify-content: space-between;
-            font-size: 13.5px;
+            font-size: 13px;
         }
 
         .diag-label {
-            color: #9ca3af;
-            font-weight: 500;
+            color: var(--muted);
+            font-weight: 400;
         }
 
         .diag-val {
-            font-weight: 700;
-            color: #ffffff;
-            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
             font-variant-numeric: tabular-nums;
         }
 
         .diag-val.warning,
         .diag-val.warn-text {
-            color: #fbbf24;
+            color: #f59e0b;
         }
 
         .diag-val.danger {
-            color: #f87171;
+            color: #ef4444;
         }
 
         .diag-val.normal {
-            color: #4ade80;
+            color: #22c55e;
         }
 
         .diag-card-footer {
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
             font-size: 11px;
-            color: #71717a;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            color: var(--muted);
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         }
 
-        .diag-coord-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        /* Map Truck Marker Popup - Dark Industrial HUD Callout */
+        .truck-map-popup-wrap {
+            z-index: 50;
         }
 
-        .diag-sensor-item {
-            color: #a1a1aa;
-        }
-
-        /* Map Truck Marker Popup */
-        .map-truck-popup {
-            padding: 8px 11px;
-            background: #18181c;
-            border: 1px solid #3f3f46;
-            border-radius: 6px;
-            color: #ffffff;
-            font-size: 12px;
-            line-height: 1.45;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-            min-width: 130px;
-        }
-        .map-truck-popup .pop-title {
-            font-weight: 800;
-            font-size: 13px;
-            margin-bottom: 4px;
-            color: #ffffff;
-            border-bottom: 1px solid #2e2e36;
-            padding-bottom: 3px;
-        }
-        .map-truck-popup .pop-warn {
-            color: #fbbf24;
-            font-weight: 700;
-        }
-        .maptiler-popup-content {
+        .maplibregl-popup-content,
+        .maptiler-popup-content,
+        .truck-map-popup-wrap .maplibregl-popup-content,
+        .truck-map-popup-wrap .maptiler-popup-content {
             background: transparent !important;
             padding: 0 !important;
             box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
         }
-        .maptiler-popup-tip {
-            border-top-color: #3f3f46 !important;
+
+        .maplibregl-popup-tip,
+        .maptiler-popup-tip,
+        .truck-map-popup-wrap .maplibregl-popup-tip,
+        .truck-map-popup-wrap .maptiler-popup-tip {
+            display: none !important;
+        }
+
+        .map-truck-popup {
+            padding: 8px 12px;
+            background: #111113;
+            border: 1px solid #2a2a30;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 11px;
+            line-height: 1.4;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+            min-width: 140px;
+            pointer-events: none;
+        }
+
+        .map-truck-popup .pop-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 5px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #222226;
+        }
+
+        .map-truck-popup .pop-title {
+            font-weight: 700;
+            font-size: 12px;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+        }
+
+        .map-truck-popup .pop-id {
+            font-size: 10px;
+            color: #71717a;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
+
+        .map-truck-popup .pop-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .map-truck-popup .pop-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 11px;
+        }
+
+        .map-truck-popup .pop-lbl {
+            color: #888892;
+            font-weight: 400;
+        }
+
+        .map-truck-popup .pop-val {
+            color: #f4f4f5;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .map-truck-popup .pop-val.warn {
+            color: #f59e0b;
+        }
+
+        .map-truck-popup .pop-val.normal {
+            color: #22c55e;
+        }
+
+        .map-truck-popup .pop-val.danger {
+            color: #ef4444;
         }
 
         .fuel-row {
@@ -1707,10 +1736,11 @@
                     <!-- Real-Time Truck Diagnostic Telemetry Card -->
                     <div class="truck-diagnostics-card" id="truck-diag-card">
                         <div class="diag-card-header">
-                            <div class="diag-unit-id" id="diag-unit-id">TRUCK-01</div>
-                            <span class="diag-callsign" id="diag-callsign-id">(AST-10042)</span>
-                            <span class="diag-status-pill warning" id="diag-status-pill">
-                                <span class="diag-pulse-dot"></span>
+                            <div class="diag-title-group">
+                                <span class="diag-unit-id" id="diag-unit-id">TRUCK-01</span>
+                                <span class="diag-callsign" id="diag-callsign-id">(AST-10042)</span>
+                            </div>
+                            <span class="diag-status-tag warning" id="diag-status-pill">
                                 <span id="diag-status-label">WARNING</span>
                             </span>
                         </div>
@@ -1725,15 +1755,12 @@
                             </div>
                             <div class="diag-row">
                                 <span class="diag-label">Visibility:</span>
-                                <span class="diag-val warn-text" id="diag-vis-val">LOW</span>
+                                <span class="diag-val warning" id="diag-vis-val">LOW</span>
                             </div>
                         </div>
                         <div class="diag-card-footer">
-                            <div class="diag-coord-item">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-                                <span id="diag-coords-val">18.6392° N, 81.2388° E</span>
-                            </div>
-                            <div class="diag-sensor-item" id="diag-sensor-val">LiDAR: 45m • Dust Obscuration</div>
+                            <span id="diag-coords-val">18.6392° N, 81.2388° E</span>
+                            <span id="diag-sensor-val">LiDAR: 45m • Dust Obscuration</span>
                         </div>
                     </div>
 
@@ -2222,7 +2249,7 @@
                 }
             }
 
-            // Update Diagnostics Telemetry Card (As requested: Unit, Status, Speed, Visibility)
+            // Update Diagnostics Telemetry Card (Unit, Status, Speed, Visibility)
             const diagUnit = document.getElementById("diag-unit-id");
             if (diagUnit) diagUnit.textContent = asset.unit || asset.id;
 
@@ -2232,22 +2259,19 @@
             const diagStatusLabel = document.getElementById("diag-status-label");
             const diagStatusVal = document.getElementById("diag-status-val");
             const diagStatusPill = document.getElementById("diag-status-pill");
-            const diagCard = document.getElementById("truck-diag-card");
 
             const isWarn = (asset.condition === "WARNING" || asset.status === "WARNING");
             const isDanger = (asset.status === "E-Stopped" || asset.battery < 40);
             const displayStatus = asset.condition || asset.status;
+            const statusClass = isDanger ? "danger" : (isWarn ? "warning" : "normal");
 
             if (diagStatusLabel) diagStatusLabel.textContent = displayStatus;
             if (diagStatusVal) {
                 diagStatusVal.textContent = displayStatus;
-                diagStatusVal.className = "diag-val " + (isDanger ? "danger" : (isWarn ? "warning" : "normal"));
+                diagStatusVal.className = "diag-val " + statusClass;
             }
             if (diagStatusPill) {
-                diagStatusPill.className = "diag-status-pill " + (isDanger ? "danger" : (isWarn ? "warning" : "normal"));
-            }
-            if (diagCard) {
-                diagCard.style.borderLeftColor = isDanger ? "#ef4444" : (isWarn ? "#f59e0b" : "#10b981");
+                diagStatusPill.className = "diag-status-tag " + statusClass;
             }
 
             const diagSpeedVal = document.getElementById("diag-speed-val");
@@ -2256,7 +2280,7 @@
             const diagVisVal = document.getElementById("diag-vis-val");
             if (diagVisVal) {
                 diagVisVal.textContent = asset.visibility || "LOW";
-                diagVisVal.className = "diag-val " + (asset.visibility === "LOW" ? "warn-text" : "normal");
+                diagVisVal.className = "diag-val " + (asset.visibility === "LOW" ? "warning" : "normal");
             }
 
             const diagCoordsVal = document.getElementById("diag-coords-val");
@@ -2339,11 +2363,12 @@
                 if (activeMapPopup) activeMapPopup.remove();
 
                 const isWarn = (selectedAsset.condition === "WARNING" || selectedAsset.status === "WARNING");
-                const statusColor = isWarn ? "#fbbf24" : "#4ade80";
-                const visColor = selectedAsset.visibility === "LOW" ? "#fbbf24" : "#4ade80";
+                const isDanger = (selectedAsset.status === "E-Stopped" || selectedAsset.battery < 40);
+                const statusClass = isDanger ? "danger" : (isWarn ? "warn" : "normal");
+                const visClass = selectedAsset.visibility === "LOW" ? "warn" : "normal";
 
                 activeMapPopup = new maptilersdk.Popup({
-                    offset: [0, -20],
+                    offset: [0, -22],
                     closeButton: false,
                     closeOnClick: false,
                     className: 'truck-map-popup-wrap'
@@ -2351,10 +2376,24 @@
                 .setLngLat(selectedAsset.coords)
                 .setHTML(`
                     <div class="map-truck-popup">
-                        <div class="pop-title">${selectedAsset.unit || selectedAsset.id}</div>
-                        <div>Status: <span style="color: ${statusColor}; font-weight: 700;">${selectedAsset.condition || selectedAsset.status}</span></div>
-                        <div>Speed: <b>${selectedAsset.speed} km/h</b></div>
-                        <div>Visibility: <span style="color: ${visColor}; font-weight: 700;">${selectedAsset.visibility || "LOW"}</span></div>
+                        <div class="pop-header">
+                            <span class="pop-title">${selectedAsset.unit || selectedAsset.id}</span>
+                            <span class="pop-id">(${selectedAsset.id})</span>
+                        </div>
+                        <div class="pop-rows">
+                            <div class="pop-row">
+                                <span class="pop-lbl">Status:</span>
+                                <span class="pop-val ${statusClass}">${selectedAsset.condition || selectedAsset.status}</span>
+                            </div>
+                            <div class="pop-row">
+                                <span class="pop-lbl">Speed:</span>
+                                <span class="pop-val">${selectedAsset.speed} km/h</span>
+                            </div>
+                            <div class="pop-row">
+                                <span class="pop-lbl">Visibility:</span>
+                                <span class="pop-val ${visClass}">${selectedAsset.visibility || "LOW"}</span>
+                            </div>
+                        </div>
                     </div>
                 `)
                 .addTo(mapInstance);
