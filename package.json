@@ -1,0 +1,19 @@
+{
+  "name": "drishti-vayu-controlroom",
+  "version": "1.0.0",
+  "description": "Drishti Vayu - Real-Time Autonomous Mining Control Room",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve .",
+    "build": "echo 'Static assets ready for deployment'"
+  },
+  "keywords": [
+    "mining",
+    "control-room",
+    "maptiler",
+    "satellite",
+    "drishti-vayu"
+  ],
+  "author": "Anurag Tummapudi",
+  "license": "ISC"
+}

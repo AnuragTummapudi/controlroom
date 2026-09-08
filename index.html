@@ -1,0 +1,2805 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drishti Vayu</title>
+    <!-- MapTiler SDK JS & CSS -->
+    <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.css" rel="stylesheet" />
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.umd.js"></script>
+    <!-- Application Config -->
+    <script src="config.js"></script>
+    <!-- 3D Model Viewer -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <style>
+        :root {
+            --bg: #0d0d0e;
+            --panel: #18181b;
+            --panel-alt: #1c1c1f;
+            --border: #2a2a2e;
+            --text: #f5f5f5;
+            --muted: #8a8a8e;
+            --blue: #4f8ff7;
+            --red: #d92d2d;
+            --green-bg: #1f3f2c;
+            --green-text: #5fd68a;
+            --teal-bg: #17394a;
+            --teal-text: #5cc7e8;
+            --gold-bg: #4a3a12;
+            --gold-text: #e0b84a;
+            --orange-bg: #4a2f12;
+            --orange-text: #f2a24d;
+            --row-hover: #202024;
+            --row-selected: #232327;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, "Helvetica Neue", system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        /* ---------------- TOP BAR ---------------- */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            padding: 0 20px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 200;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+
+        .topbar-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            color: var(--blue);
+        }
+
+        .topbar-title {
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: -0.3px;
+            color: #ffffff;
+        }
+
+        .brand-badge {
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #27272a;
+            color: #d4d4d8;
+            border: 1px solid #3f3f46;
+        }
+
+        .site-dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .site-dropdown-btn:hover {
+            border-color: var(--blue);
+            background: #25252a;
+        }
+
+        .site-dropdown {
+            position: absolute;
+            top: 48px;
+            left: 0;
+            width: 290px;
+            background: #18181c;
+            border: 1px solid #3f3f46;
+            border-radius: 8px;
+            padding: 6px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .site-dropdown.show {
+            display: flex;
+            animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .site-option {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 9px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .site-option:hover {
+            background: #27272e;
+        }
+
+        .site-option.active {
+            background: rgba(79, 143, 247, 0.14);
+            border-left: 3px solid var(--blue);
+        }
+
+        .site-opt-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .site-sub {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .topbar-tabs {
+            display: flex;
+            gap: 24px;
+        }
+
+        .topbar-tabs a {
+            text-decoration: none;
+            font-size: 13.5px;
+            padding: 6px 4px;
+            cursor: pointer;
+            transition: color 0.15s;
+            user-select: none;
+        }
+
+        .topbar-tabs a.active {
+            color: var(--blue);
+            font-weight: 600;
+            border-bottom: 2px solid var(--blue);
+        }
+
+        .topbar-tabs a.inactive {
+            color: var(--muted);
+        }
+
+        .topbar-tabs a.inactive:hover {
+            color: var(--text);
+        }
+
+        .estop-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--red);
+            color: #fff;
+            font-weight: 700;
+            font-size: 13px;
+            border: none;
+            border-radius: 20px;
+            padding: 9px 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(217, 45, 45, 0.35);
+        }
+
+        .estop-btn:hover {
+            background: #b91c1c;
+            transform: scale(1.02);
+        }
+
+        .estop-btn.active {
+            background: #dc2626;
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.4), 0 0 20px rgba(220, 38, 38, 0.6);
+            animation: estopBlink 1s infinite alternate;
+        }
+
+        @keyframes estopBlink {
+            from { opacity: 0.9; }
+            to { opacity: 1; filter: brightness(1.2); }
+        }
+
+        .estop-btn .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff;
+            display: inline-block;
+        }
+
+        .estop-btn.active .dot {
+            background: #fef08a;
+            animation: pulseDot 0.8s infinite alternate;
+        }
+
+        @keyframes pulseDot {
+            from { transform: scale(0.8); }
+            to { transform: scale(1.3); }
+        }
+
+        .estop-banner {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #7f1d1d;
+            color: #fef2f2;
+            font-size: 12.5px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            padding: 7px 16px;
+            border-bottom: 1px solid #ef4444;
+            z-index: 150;
+        }
+
+        .estop-banner.active {
+            display: flex;
+            animation: slideDownBanner 0.25s ease-out;
+        }
+
+        @keyframes slideDownBanner {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        /* ---------------- MAIN LAYOUT ---------------- */
+        .main {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+
+        /* ---------------- LEFT SIDEBAR ---------------- */
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .sidebar-controls {
+            display: flex;
+            gap: 10px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .search-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 10px;
+        }
+
+        .search-box svg {
+            flex-shrink: 0;
+            color: var(--muted);
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 13px;
+            width: 100%;
+        }
+
+        .search-box input::placeholder {
+            color: var(--muted);
+        }
+
+        .filter-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--blue);
+            background: #222226;
+        }
+
+        .filter-dropdown {
+            position: absolute;
+            top: 42px;
+            right: 0;
+            width: 190px;
+            background: #18181c;
+            border: 1px solid #3f3f46;
+            border-radius: 8px;
+            padding: 6px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            z-index: 500;
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .filter-dropdown.show {
+            display: flex;
+            animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            font-size: 12.5px;
+            color: var(--text);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .filter-option:hover {
+            background: #27272e;
+        }
+
+        .filter-option.active {
+            background: rgba(79, 143, 247, 0.15);
+            color: var(--blue);
+            font-weight: 600;
+        }
+
+        .filter-count {
+            font-size: 11px;
+            color: var(--muted);
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+
+        .asset-list {
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .asset-row {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, transform 0.1s;
+            position: relative;
+        }
+
+        .asset-row:hover {
+            background: var(--row-hover);
+        }
+
+        .asset-row.selected {
+            background: #1e1f26;
+            border-left: 3px solid var(--blue);
+            padding-left: 13px;
+            box-shadow: inset 0 0 16px rgba(79, 143, 247, 0.08);
+        }
+
+        .asset-row-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .asset-title-group {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .asset-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .asset-status-dot.hauling { background: var(--green-text); box-shadow: 0 0 6px rgba(95, 214, 138, 0.6); }
+        .asset-status-dot.dumping { background: var(--teal-text); }
+        .asset-status-dot.spotting { background: var(--gold-text); }
+        .asset-status-dot.fueling { background: var(--orange-text); }
+        .asset-status-dot.paused { background: #f59e0b; }
+        .asset-status-dot.estopped { background: var(--red); }
+        .asset-status-dot.manual { background: #38bdf8; }
+
+        .asset-id {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 13.5px;
+            letter-spacing: -0.2px;
+        }
+
+        .mode-badge {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 1.5px 5px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .mode-badge.auto {
+            background: rgba(79, 143, 247, 0.12);
+            color: #60a5fa;
+            border: 1px solid rgba(79, 143, 247, 0.28);
+        }
+        .mode-badge.manual {
+            background: rgba(242, 162, 77, 0.14);
+            color: #f2a24d;
+            border: 1px solid rgba(242, 162, 77, 0.3);
+        }
+
+        .asset-row-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .row-locate-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--muted);
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .asset-row:hover .row-locate-btn {
+            border-color: rgba(79, 143, 247, 0.45);
+            color: var(--text);
+        }
+
+        .row-locate-btn:hover {
+            background: var(--blue) !important;
+            color: #fff !important;
+            border-color: var(--blue) !important;
+            box-shadow: 0 0 8px rgba(79, 143, 247, 0.4);
+        }
+
+        .asset-speed-tag {
+            font-size: 11px;
+            color: #a1a1aa;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 1.5px 6px;
+            border-radius: 4px;
+            font-variant-numeric: tabular-nums;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .badge.hauling {
+            background: var(--green-bg);
+            color: var(--green-text);
+        }
+
+        .badge.dumping {
+            background: var(--teal-bg);
+            color: var(--teal-text);
+        }
+
+        .badge.spotting {
+            background: var(--gold-bg);
+            color: var(--gold-text);
+        }
+
+        .badge.fueling {
+            background: var(--orange-bg);
+            color: var(--orange-text);
+        }
+
+        .badge.paused {
+            background: #451a03;
+            color: #fbbf24;
+        }
+
+        .badge.estopped {
+            background: #450a0a;
+            color: #f87171;
+        }
+
+        .badge.manual {
+            background: #082f49;
+            color: #38bdf8;
+        }
+
+        .asset-row-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .battery {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ---------------- CENTER MAP AREA ---------------- */
+        .center-area {
+            flex: 1;
+            background: #0b0b0d;
+            min-width: 0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+        }
+
+        #mining-map {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            outline: none;
+        }
+
+        /* MapTiler Dark Theme Control Room UI Overrides */
+        .maplibregl-ctrl-group {
+            background: rgba(24, 24, 27, 0.88) !important;
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border) !important;
+            border-radius: 6px !important;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        .maplibregl-ctrl-group button {
+            border-bottom: 1px solid var(--border) !important;
+        }
+
+        .maplibregl-ctrl-group button:last-child {
+            border-bottom: none !important;
+        }
+
+        .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+            filter: invert(1) brightness(0.9);
+        }
+
+        .maplibregl-ctrl-attrib {
+            background: rgba(13, 13, 14, 0.75) !important;
+            color: var(--muted) !important;
+            font-size: 10px !important;
+            backdrop-filter: blur(4px);
+            padding: 2px 8px !important;
+            border-top-left-radius: 4px;
+        }
+
+        .maplibregl-ctrl-attrib a {
+            color: #71717a !important;
+        }
+
+        /* HUD Overlays on Map */
+        .map-hud-top-left {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .hud-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            background: rgba(24, 24, 27, 0.88);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            pointer-events: auto;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse 1.8s infinite;
+        }
+
+        .hud-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hud-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #f4f4f5;
+            letter-spacing: 0.5px;
+        }
+
+        .hud-sub {
+            font-size: 9.5px;
+            color: var(--muted);
+            letter-spacing: 0.3px;
+        }
+
+        .map-hud-controls {
+            position: absolute;
+            top: 16px;
+            right: 56px;
+            z-index: 10;
+            display: flex;
+            gap: 8px;
+        }
+
+        .map-ctrl-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text);
+            background: rgba(24, 24, 27, 0.88);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        }
+
+        .map-ctrl-btn:hover {
+            background: #27272a;
+            border-color: #3f3f46;
+        }
+
+        /* Custom Haul Truck Markers */
+        .truck-marker-el {
+            position: relative;
+            cursor: pointer;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .truck-icon-wrap {
+            position: relative;
+            width: 22px;
+            height: 32px;
+            transform-origin: center center;
+            transition: transform 0.3s ease-out;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.8));
+        }
+
+        .truck-label-tag {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1px 5px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #e4e4e7;
+            background: rgba(18, 18, 20, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 3px;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 0.2px;
+            opacity: 0.85;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .truck-marker-el:hover .truck-label-tag {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.95);
+            border-color: var(--blue);
+            color: #fff;
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .truck-selection-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 44px;
+            height: 44px;
+            margin-top: -22px;
+            margin-left: -22px;
+            border-radius: 50%;
+            border: 2px solid #38bdf8;
+            background: rgba(56, 189, 248, 0.18);
+            pointer-events: none;
+            display: none;
+            animation: truckPulse 2s infinite ease-out;
+        }
+
+        .truck-marker-el.selected {
+            z-index: 50 !important;
+        }
+
+        .truck-marker-el.selected .truck-selection-pulse {
+            display: block;
+        }
+
+        .truck-marker-el.selected .truck-icon-wrap {
+            filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.95)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+        }
+
+        .truck-marker-el.selected .truck-label-tag {
+            opacity: 1;
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #38bdf8;
+            font-weight: 700;
+        }
+
+        @keyframes truckPulse {
+            0% {
+                transform: scale(0.7);
+                opacity: 0.9;
+            }
+            70% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        /* ---------------- RIGHT PANEL ---------------- */
+        .detail-panel {
+            width: 380px;
+            flex-shrink: 0;
+            background: var(--panel);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 20px;
+            position: relative;
+            transition: all 0.25s ease;
+        }
+
+        .detail-panel.hidden {
+            display: none !important;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--muted);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+            background: #2d2d34;
+            border-color: #52525b;
+        }
+
+        .reopen-panel-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 20;
+            background: rgba(24, 24, 27, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 14px;
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s;
+        }
+
+        .reopen-panel-btn.show {
+            display: flex;
+        }
+
+        .reopen-panel-btn:hover {
+            background: #27272a;
+            border-color: var(--blue);
+            color: #fff;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            padding-right: 32px;
+        }
+
+        .detail-header h1 {
+            font-size: 22px;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .detail-subline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        .detail-subline .battery {
+            color: var(--muted);
+        }
+
+        .detail-tabs {
+            display: flex;
+            gap: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .detail-tabs span {
+            padding-bottom: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.15s, border-color 0.15s;
+            user-select: none;
+        }
+
+        .detail-tabs .tab-active {
+            color: var(--text);
+            border-bottom: 2px solid var(--blue);
+            font-weight: 600;
+        }
+
+        .detail-tabs .tab-inactive {
+            color: var(--muted);
+            border-bottom: 2px solid transparent;
+        }
+
+        .detail-tabs .tab-inactive:hover {
+            color: var(--text);
+        }
+
+        .model-viewer-wrap {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background: radial-gradient(circle at 50% 40%, #28282d 0%, #161618 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 18px;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            display: block;
+            --poster-color: transparent;
+            background-color: transparent;
+            outline: none;
+        }
+
+        .model-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--muted);
+            background: rgba(24, 24, 27, 0.75);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            pointer-events: none;
+            letter-spacing: 0.2px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+            font-size: 12.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .action-btn:hover {
+            background: #222226;
+            border-color: #52525b;
+        }
+
+        .action-btn.active-manual {
+            background: rgba(56, 189, 248, 0.12);
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+
+        .action-btn.active-paused {
+            background: rgba(245, 158, 11, 0.12);
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 12px 0;
+        }
+
+        .info-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .info-row .label {
+            color: var(--muted);
+        }
+
+        .info-row .value {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        /* Real-Time Truck Diagnostics Telemetry Card (Replaces generic thumbnail) */
+        .truck-diagnostics-card {
+            width: 100%;
+            background: #141416;
+            border: 1px solid #2a2a30;
+            border-left: 3px solid #f59e0b;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .diag-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .diag-unit-id {
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            font-family: Inter, -apple-system, sans-serif;
+        }
+
+        .diag-callsign {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .diag-status-pill {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+
+        .diag-status-pill.warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .diag-status-pill.normal {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.35);
+        }
+
+        .diag-status-pill.danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        .diag-pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: diagPulse 1.5s infinite;
+        }
+
+        @keyframes diagPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.85); }
+        }
+
+        .diag-card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .diag-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            font-size: 13.5px;
+        }
+
+        .diag-label {
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        .diag-val {
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 14px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .diag-val.warning,
+        .diag-val.warn-text {
+            color: #fbbf24;
+        }
+
+        .diag-val.danger {
+            color: #f87171;
+        }
+
+        .diag-val.normal {
+            color: #4ade80;
+        }
+
+        .diag-card-footer {
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #71717a;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .diag-coord-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .diag-sensor-item {
+            color: #a1a1aa;
+        }
+
+        /* Map Truck Marker Popup */
+        .map-truck-popup {
+            padding: 8px 11px;
+            background: #18181c;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 12px;
+            line-height: 1.45;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            min-width: 130px;
+        }
+        .map-truck-popup .pop-title {
+            font-weight: 800;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #ffffff;
+            border-bottom: 1px solid #2e2e36;
+            padding-bottom: 3px;
+        }
+        .map-truck-popup .pop-warn {
+            color: #fbbf24;
+            font-weight: 700;
+        }
+        .maptiler-popup-content {
+            background: transparent !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
+        .maptiler-popup-tip {
+            border-top-color: #3f3f46 !important;
+        }
+
+        .fuel-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .fuel-row-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .fuel-row-top .label {
+            color: var(--muted);
+        }
+
+        .fuel-row-top .value {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--green-text);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .status-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* History Timeline */
+        .history-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 8px 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 20px;
+            border-left: 2px solid #27272a;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -5px;
+            top: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--blue);
+        }
+
+        .timeline-dot.green { background: var(--green-text); }
+        .timeline-dot.orange { background: var(--orange-text); }
+        .timeline-dot.cyan { background: var(--teal-text); }
+
+        .timeline-time {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 2px;
+            font-family: monospace;
+        }
+
+        .timeline-event {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .timeline-meta {
+            font-size: 11.5px;
+            color: #a1a1aa;
+            margin-top: 2px;
+        }
+
+        /* Fleet Table View */
+        .fleet-table-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0d0d0e;
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .fleet-table-container.active {
+            display: flex;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .fleet-table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .fleet-table-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .fleet-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+            background: var(--panel);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .fleet-table th {
+            padding: 12px 16px;
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            background: #151518;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .fleet-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .fleet-table tr:hover td {
+            background: #222227;
+            cursor: pointer;
+        }
+
+        .fleet-table tr.selected td {
+            background: rgba(79, 143, 247, 0.12);
+        }
+
+        .table-action-btn {
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            color: var(--blue);
+            font-weight: 600;
+            font-size: 11.5px;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .table-action-btn:hover {
+            background: var(--blue);
+            color: #fff;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            background: rgba(24, 24, 28, 0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            color: #fff;
+            font-size: 13px;
+            pointer-events: auto;
+            animation: toastSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.warning { border-left: 4px solid #f59e0b; }
+        .toast.danger  { border-left: 4px solid #ef4444; }
+        .toast.info    { border-left: 4px solid var(--blue); }
+
+        @keyframes toastSlide {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95) translateY(-6px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .pulse-dot {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title-wrap">
+                    <span class="topbar-title">Drishti Vayu</span>
+                    <span class="brand-badge">CONTROL ROOM</span>
+                </div>
+                <div class="site-dropdown-btn" id="site-dropdown-trigger" title="Switch Mine Complex">
+                    <span class="site-name" id="current-site-name">Drishti Vayu • Deposit 14</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                <div class="site-dropdown" id="site-dropdown-menu">
+                    <div class="site-option active" data-coords="[81.2385, 18.6395]" data-zoom="14.3" data-name="Drishti Vayu • Deposit 14">
+                        <span class="site-opt-title">Drishti Vayu • Deposit 14</span>
+                        <span class="site-sub">Kirandul Complex • Active Open Pit</span>
+                    </div>
+                    <div class="site-option" data-coords="[81.2335, 18.6510]" data-zoom="14.5" data-name="Drishti Vayu • Deposit 11C">
+                        <span class="site-opt-title">Drishti Vayu • Deposit 11C</span>
+                        <span class="site-sub">North Ridge Mining Lease</span>
+                    </div>
+                    <div class="site-option" data-coords="[81.2205, 18.6918]" data-zoom="14.0" data-name="Drishti Vayu • Deposit 5">
+                        <span class="site-opt-title">Drishti Vayu • Deposit 5</span>
+                        <span class="site-sub">Bacheli Sector • Heavy Haul Ramp</span>
+                    </div>
+                    <div class="site-option" data-coords="[81.2545, 18.6350]" data-zoom="15.0" data-name="Drishti Vayu • Primary Crusher">
+                        <span class="site-opt-title">Drishti Vayu • Primary Crusher</span>
+                        <span class="site-sub">Processing & Dispatch Terminal</span>
+                    </div>
+                </div>
+            </div>
+            <div class="topbar-tabs">
+                <a class="active" id="topbar-tab-map">Map View</a>
+                <a class="inactive" id="topbar-tab-list">Fleet Table</a>
+            </div>
+            <button class="estop-btn" id="btn-estop">
+                <span class="dot"></span>
+                <span id="estop-text">Emergency Stop All</span>
+            </button>
+        </div>
+
+        <div class="estop-banner" id="estop-banner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <span>CRITICAL ALERT: FLEET-WIDE EMERGENCY STOP ACTIVE • ALL AUTONOMOUS VEHICLES BRAKED</span>
+        </div>
+
+        <div class="main">
+
+            <!-- LEFT SIDEBAR -->
+            <div class="sidebar">
+                <div class="sidebar-controls">
+                    <div class="search-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="asset-search" placeholder="Search ID, status, zone...">
+                    </div>
+                    <div style="position: relative;">
+                        <button class="filter-btn" id="btn-filter">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            <span id="filter-btn-text">Filter</span>
+                        </button>
+                        <div class="filter-dropdown" id="filter-dropdown-menu">
+                            <div class="filter-option active" data-status="ALL">
+                                <span>All Statuses</span>
+                                <span class="filter-count">12</span>
+                            </div>
+                            <div class="filter-option" data-status="Hauling">
+                                <span>Hauling</span>
+                                <span class="filter-count">8</span>
+                            </div>
+                            <div class="filter-option" data-status="Dumping">
+                                <span>Dumping</span>
+                                <span class="filter-count">1</span>
+                            </div>
+                            <div class="filter-option" data-status="Spotting at Load">
+                                <span>Spotting</span>
+                                <span class="filter-count">1</span>
+                            </div>
+                            <div class="filter-option" data-status="Fueling">
+                                <span>Fueling</span>
+                                <span class="filter-count">1</span>
+                            </div>
+                            <div class="filter-option" data-status="Paused">
+                                <span>Paused / Stopped</span>
+                                <span class="filter-count" id="filter-paused-count">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="asset-list" id="asset-list">
+                    <!-- rows injected below -->
+                </div>
+            </div>
+
+            <!-- CENTER MAP AREA (Bailadila Iron Ore Complex Satellite) -->
+            <div class="center-area">
+                <div id="mining-map"></div>
+
+                <!-- FLEET DATA TABLE OVERLAY -->
+                <div class="fleet-table-container" id="fleet-table-container">
+                    <div class="fleet-table-header">
+                        <div class="fleet-table-title">Drishti Vayu • Real-Time Autonomous Fleet Matrix</div>
+                    </div>
+                    <table class="fleet-table">
+                        <thead>
+                            <tr>
+                                <th>Asset ID</th>
+                                <th>Status</th>
+                                <th>Battery</th>
+                                <th>Fuel</th>
+                                <th>Speed</th>
+                                <th>Location / Zone</th>
+                                <th>Autonomy Mode</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fleet-table-body">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <button class="reopen-panel-btn" id="btn-reopen-panel" title="Show Vehicle Details">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>Unit Details</span>
+                </button>
+
+                <div class="map-hud-top-left">
+                    <div class="hud-pill">
+                        <span class="live-dot"></span>
+                        <div class="hud-text">
+                            <div class="hud-title">DRISHTI VAYU • RADAR</div>
+                            <div class="hud-sub" id="hud-location-text">BAILADILA COMPLEX • 12 UNITS ONLINE</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="map-hud-controls">
+                    <button class="map-ctrl-btn" id="btn-reset-view" title="Reset View to Mining Overview">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                        </svg>
+                        Reset View
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT DETAIL PANEL -->
+            <div class="detail-panel" id="detail-panel">
+                <button class="close-btn" id="btn-close-detail" aria-label="Close" title="Close Panel">&#10005;</button>
+
+                <div class="detail-header">
+                    <h1 id="detail-asset-id">AST-10042</h1>
+                    <span class="badge hauling" id="detail-badge">Hauling</span>
+                </div>
+                <div class="detail-subline">
+                    <span id="detail-model-type">Haul Truck • Volvo A40G</span>
+                    <span class="battery" id="detail-battery">
+                        <svg width="14" height="9" viewBox="0 0 24 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="1" y="1" width="19" height="12" rx="2"></rect>
+                            <rect x="21" y="4.5" width="2.5" height="5" rx="0.5" fill="currentColor" stroke="none"></rect>
+                            <rect x="3" y="3" width="13" height="8" fill="currentColor" stroke="none"></rect>
+                        </svg>
+                        78%
+                    </span>
+                </div>
+
+                <div class="detail-tabs">
+                    <span class="tab-active" id="tab-detail-info">Info</span>
+                    <span class="tab-inactive" id="tab-detail-history">History</span>
+                </div>
+
+                <div id="detail-tab-info-content">
+                    <div class="model-viewer-wrap">
+                        <div class="model-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                            <span>3D Interactive</span>
+                        </div>
+                        <model-viewer
+                            id="truck-model"
+                            src="2015_volvo_a40g.glb"
+                            alt="Volvo A40G Haul Truck 3D Model"
+                            auto-rotate
+                            auto-rotate-delay="1000"
+                            rotation-per-second="20deg"
+                            camera-controls
+                            touch-action="pan-y"
+                            shadow-intensity="1.2"
+                            shadow-softness="0.7"
+                            exposure="1.0"
+                            interaction-prompt="none"
+                            loading="eager">
+                        </model-viewer>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="action-btn" id="btn-autonomy" title="Toggle Autonomous / Teleoperation Mode">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <circle cx="12" cy="12" r="2.5"></circle>
+                                <line x1="12" y1="3" x2="12" y2="7"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                                <line x1="3" y1="12" x2="7" y2="12"></line>
+                                <line x1="17" y1="12" x2="21" y2="12"></line>
+                            </svg>
+                            <span id="btn-autonomy-text">Disengage Autonomy</span>
+                        </button>
+                        <button class="action-btn" id="btn-pause-vehicle" title="Pause or Resume Vehicle">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" id="pause-icon">
+                                <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+                                <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+                            </svg>
+                            <span id="btn-pause-text">Pause Vehicle</span>
+                        </button>
+                    </div>
+
+                    <h3 class="section-title">Asset Info</h3>
+                    <div class="info-rows">
+                        <div class="info-row"><span class="label">Type</span><span class="value" id="info-type">Haul Truck</span></div>
+                        <div class="info-row"><span class="label">Year</span><span class="value">2025</span></div>
+                        <div class="info-row"><span class="label">License Plate</span><span class="value" id="info-plate">MN-4521</span></div>
+                        <div class="info-row"><span class="label">SW Version</span><span class="value" id="info-sw">v 3.2.1</span></div>
+                        <div class="info-row"><span class="label">Control Mode</span><span class="value" id="info-control-mode" style="color: var(--blue); font-weight: 600;">Autonomous</span></div>
+                    </div>
+
+                    <!-- Real-Time Truck Diagnostic Telemetry Card -->
+                    <div class="truck-diagnostics-card" id="truck-diag-card">
+                        <div class="diag-card-header">
+                            <div class="diag-unit-id" id="diag-unit-id">TRUCK-01</div>
+                            <span class="diag-callsign" id="diag-callsign-id">(AST-10042)</span>
+                            <span class="diag-status-pill warning" id="diag-status-pill">
+                                <span class="diag-pulse-dot"></span>
+                                <span id="diag-status-label">WARNING</span>
+                            </span>
+                        </div>
+                        <div class="diag-card-body">
+                            <div class="diag-row">
+                                <span class="diag-label">Status:</span>
+                                <span class="diag-val warning" id="diag-status-val">WARNING</span>
+                            </div>
+                            <div class="diag-row">
+                                <span class="diag-label">Speed:</span>
+                                <span class="diag-val" id="diag-speed-val">18 km/h</span>
+                            </div>
+                            <div class="diag-row">
+                                <span class="diag-label">Visibility:</span>
+                                <span class="diag-val warn-text" id="diag-vis-val">LOW</span>
+                            </div>
+                        </div>
+                        <div class="diag-card-footer">
+                            <div class="diag-coord-item">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                                <span id="diag-coords-val">18.6392° N, 81.2388° E</span>
+                            </div>
+                            <div class="diag-sensor-item" id="diag-sensor-val">LiDAR: 45m • Dust Obscuration</div>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title">Live Status</h3>
+                    <div class="status-rows">
+                        <div class="fuel-row">
+                            <div class="fuel-row-top">
+                                <span class="label">Fuel</span>
+                                <span class="value" id="live-fuel">50%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="live-fuel-bar" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                        <div class="info-row"><span class="label">Speed</span><span class="value" id="live-speed">18 km/h</span></div>
+                        <div class="info-row"><span class="label">Location</span><span class="value" id="live-loc">Haul Road A - North</span></div>
+                        <div class="info-row"><span class="label">Payload</span><span class="value" id="live-payload">38.4 t</span></div>
+                        <div class="info-row"><span class="label">Last Online</span><span class="value" id="live-time">Now</span></div>
+                    </div>
+                </div>
+
+                <div id="detail-tab-history-content" style="display: none;">
+                    <h3 class="section-title">Telemetry & Trip History</h3>
+                    <div class="history-timeline" id="history-timeline-list">
+                        <!-- Populated dynamically based on selected vehicle -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // Fleet Data aligned with Bailadila Iron Ore Complex (Deposit 14 / 11C, Kirandul)
+        const assets = [
+            { id: "AST-10042", unit: "TRUCK-01", status: "WARNING", condition: "WARNING", battery: 78, fuel: 50, speed: 18, visibility: "LOW", location: "Haul Road A - North", coords: [81.2388, 18.6392], heading: 145, selected: true, routeId: "main-corridor", autonomous: true, isPaused: false, payload: 38.4, plate: "MN-4521" },
+            { id: "AST-10041", unit: "TRUCK-02", status: "Dumping", condition: "NORMAL", battery: 78, fuel: 62, speed: 0, visibility: "OPTIMAL", location: "South Waste Dump", coords: [81.2294, 18.6248], heading: 210, routeId: "dump-route", autonomous: true, isPaused: false, payload: 0.0, plate: "MN-4522" },
+            { id: "AST-10040", unit: "TRUCK-03", status: "Spotting at Load", condition: "WARNING", battery: 78, fuel: 85, speed: 4, visibility: "LOW", location: "Bench 14 Loading", coords: [81.2348, 18.6385], heading: 80, routeId: "pit-route", autonomous: true, isPaused: false, payload: 12.1, plate: "MN-4523" },
+            { id: "AST-10039", unit: "TRUCK-04", status: "Hauling", condition: "NORMAL", battery: 65, fuel: 40, speed: 24, visibility: "MODERATE", location: "Haul Road B - Switchback", coords: [81.2428, 18.6368], heading: 110, routeId: "main-corridor", autonomous: true, isPaused: false, payload: 39.0, plate: "MN-4524" },
+            { id: "AST-10038", unit: "TRUCK-05", status: "Hauling", condition: "NORMAL", battery: 82, fuel: 74, speed: 22, visibility: "OPTIMAL", location: "Incline Ramp", coords: [81.2465, 18.6332], heading: 130, routeId: "main-corridor", autonomous: true, isPaused: false, payload: 37.8, plate: "MN-4525" },
+            { id: "AST-10037", unit: "TRUCK-06", status: "Hauling", condition: "NORMAL", battery: 71, fuel: 58, speed: 19, visibility: "HIGH", location: "Pit Access South", coords: [81.2312, 18.6315], heading: 320, routeId: "pit-route", autonomous: true, isPaused: false, payload: 36.5, plate: "MN-4526" },
+            { id: "AST-10036", unit: "TRUCK-07", status: "Hauling", condition: "NORMAL", battery: 88, fuel: 82, speed: 21, visibility: "HIGH", location: "Haul Road A - Ridge", coords: [81.2365, 18.6418], heading: 40, routeId: "north-link", autonomous: true, isPaused: false, payload: 40.2, plate: "MN-4527" },
+            { id: "AST-10035", unit: "TRUCK-08", status: "Hauling", condition: "WARNING", battery: 53, fuel: 32, speed: 16, visibility: "LOW", location: "Crusher Approach", coords: [81.2505, 18.6312], heading: 95, routeId: "main-corridor", autonomous: true, isPaused: false, payload: 39.5, plate: "MN-4528" },
+            { id: "AST-10034", unit: "TRUCK-09", status: "Hauling", condition: "NORMAL", battery: 77, fuel: 67, speed: 20, visibility: "HIGH", location: "Plant Delivery Road", coords: [81.2538, 18.6342], heading: 25, routeId: "staging-route", autonomous: true, isPaused: false, payload: 38.0, plate: "MN-4529" },
+            { id: "AST-10033", unit: "TRUCK-10", status: "Hauling", condition: "NORMAL", battery: 69, fuel: 53, speed: 17, visibility: "MODERATE", location: "Deposit 11 Link", coords: [81.2340, 18.6475], heading: 195, routeId: "north-link", autonomous: true, isPaused: false, payload: 37.2, plate: "MN-4530" },
+            { id: "AST-10032", unit: "TRUCK-11", status: "Fueling", condition: "MAINTENANCE", battery: 80, fuel: 98, speed: 0, visibility: "OPTIMAL", location: "Fleet Workshop Staging", coords: [81.2562, 18.6385], heading: 270, routeId: "staging-route", autonomous: false, isPaused: true, payload: 0.0, plate: "MN-4531" },
+            { id: "AST-10031", unit: "TRUCK-12", status: "Hauling", condition: "NORMAL", battery: 74, fuel: 61, speed: 23, visibility: "HIGH", location: "Haul Road C - Central", coords: [81.2405, 18.6380], heading: 125, routeId: "main-corridor", autonomous: true, isPaused: false, payload: 38.9, plate: "MN-4532" },
+        ];
+
+        let fleetEStopped = false;
+        let currentFilter = "ALL";
+        let searchQuery = "";
+        let currentView = "map"; // "map" or "list"
+        let activeMapPopup = null;
+
+        const statusClassMap = {
+            "Hauling": "hauling",
+            "WARNING": "warning",
+            "warning": "warning",
+            "Dumping": "dumping",
+            "Spotting at Load": "spotting",
+            "Fueling": "fueling",
+            "Paused": "paused",
+            "E-Stopped": "estopped",
+            "Manual": "manual"
+        };
+
+        const batteryIconSVG = `<svg width="12" height="8" viewBox="0 0 24 14" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="1" y="1" width="19" height="12" rx="2"></rect>
+      <rect x="21" y="4.5" width="2.5" height="5" rx="0.5" fill="currentColor" stroke="none"></rect>
+      <rect x="3" y="3" width="13" height="8" fill="currentColor" stroke="none"></rect>
+    </svg>`;
+
+        // Yellow Mining Haul Truck SVG for map markers
+        const haulTruckSVG = `<svg width="22" height="32" viewBox="0 0 22 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.5" y="4" width="3" height="7" rx="1.5" fill="#18181b" stroke="#3f3f46" stroke-width="0.6"/>
+            <rect x="18.5" y="4" width="3" height="7" rx="1.5" fill="#18181b" stroke="#3f3f46" stroke-width="0.6"/>
+            <rect x="0.5" y="20" width="3.5" height="8" rx="1.5" fill="#18181b" stroke="#3f3f46" stroke-width="0.6"/>
+            <rect x="18" y="20" width="3.5" height="8" rx="1.5" fill="#18181b" stroke="#3f3f46" stroke-width="0.6"/>
+            <rect x="2.5" y="10" width="17" height="19" rx="2" fill="#eab308" stroke="#ca8a04" stroke-width="1"/>
+            <line x1="4.5" y1="14" x2="17.5" y2="14" stroke="#a16207" stroke-width="0.8"/>
+            <line x1="4.5" y1="18" x2="17.5" y2="18" stroke="#a16207" stroke-width="0.8"/>
+            <line x1="4.5" y1="22" x2="17.5" y2="22" stroke="#a16207" stroke-width="0.8"/>
+            <line x1="4.5" y1="26" x2="17.5" y2="26" stroke="#a16207" stroke-width="0.8"/>
+            <rect x="3" y="1" width="16" height="10" rx="1.5" fill="#facc15" stroke="#ca8a04" stroke-width="0.8"/>
+            <rect x="4" y="2" width="6.5" height="5.5" rx="1" fill="#1e293b" stroke="#0f172a" stroke-width="0.5"/>
+            <rect x="4.8" y="2.6" width="5" height="2" rx="0.5" fill="#38bdf8"/>
+            <path d="M2.5 10 L19.5 10 L18 8 L4 8 Z" fill="#ca8a04"/>
+        </svg>`;
+
+        // GeoJSON Mining Operational Zones
+        const miningZonesGeoJSON = {
+            type: "FeatureCollection",
+            features: [
+                {
+                    type: "Feature",
+                    properties: { name: "EXCAVATION PIT 14", color: "#f59e0b", type: "Excavation" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[[81.2285, 18.6300], [81.2330, 18.6300], [81.2345, 18.6345], [81.2305, 18.6350], [81.2285, 18.6300]]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "LOADING ZONE BENCH 14", color: "#06b6d4", type: "Loading" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[[81.2335, 18.6365], [81.2375, 18.6375], [81.2370, 18.6405], [81.2330, 18.6395], [81.2335, 18.6365]]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "SOUTH WASTE DUMP", color: "#ef4444", type: "Dumping" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[[81.2260, 18.6215], [81.2310, 18.6225], [81.2305, 18.6265], [81.2255, 18.6255], [81.2260, 18.6215]]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "CRUSHER & STAGING YARD", color: "#10b981", type: "Staging" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[[81.2520, 18.6320], [81.2580, 18.6340], [81.2585, 18.6405], [81.2530, 18.6395], [81.2520, 18.6320]]]
+                    }
+                }
+            ]
+        };
+
+        // GeoJSON Mining Haul Routes
+        const haulRoutesGeoJSON = {
+            type: "FeatureCollection",
+            features: [
+                {
+                    type: "Feature",
+                    properties: { id: "main-corridor", name: "Main Haul Corridor (Pit 14 - Crusher)" },
+                    geometry: {
+                        type: "LineString",
+                        coordinates: [
+                            [81.2335, 18.6335], [81.2352, 18.6360], [81.2370, 18.6385],
+                            [81.2388, 18.6392], [81.2405, 18.6380], [81.2428, 18.6368],
+                            [81.2448, 18.6350], [81.2465, 18.6332], [81.2485, 18.6315],
+                            [81.2510, 18.6308], [81.2530, 18.6300]
+                        ]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { id: "dump-route", name: "South Waste Dump Route" },
+                    geometry: {
+                        type: "LineString",
+                        coordinates: [
+                            [81.2352, 18.6360], [81.2340, 18.6330], [81.2325, 18.6300],
+                            [81.2310, 18.6270], [81.2294, 18.6248], [81.2275, 18.6230]
+                        ]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { id: "north-link", name: "North Ridge Link (Deposit 11 Connection)" },
+                    geometry: {
+                        type: "LineString",
+                        coordinates: [
+                            [81.2370, 18.6385], [81.2365, 18.6418], [81.2355, 18.6445],
+                            [81.2340, 18.6475], [81.2325, 18.6510], [81.2310, 18.6540]
+                        ]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { id: "staging-route", name: "Fleet Staging & Workshop Loop" },
+                    geometry: {
+                        type: "LineString",
+                        coordinates: [
+                            [81.2530, 18.6300], [81.2538, 18.6342], [81.2550, 18.6365],
+                            [81.2562, 18.6385], [81.2575, 18.6370], [81.2560, 18.6330],
+                            [81.2530, 18.6300]
+                        ]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { id: "pit-route", name: "Pit 14 Deep Bench Access" },
+                    geometry: {
+                        type: "LineString",
+                        coordinates: [
+                            [81.2335, 18.6335], [81.2320, 18.6322], [81.2312, 18.6315], [81.2298, 18.6305]
+                        ]
+                    }
+                }
+            ]
+        };
+
+        const listEl = document.getElementById("asset-list");
+        const truckMarkers = {};
+        let mapInstance = null;
+
+        // Toast Notification System
+        function showToast(message, type = "info") {
+            const container = document.getElementById("toast-container");
+            if (!container) return;
+
+            const toast = document.createElement("div");
+            toast.className = `toast ${type}`;
+            
+            let iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+            if (type === "success") iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            if (type === "danger") iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+            if (type === "warning") iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+
+            toast.innerHTML = `<span>${iconSvg}</span><span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transform = "translateY(10px) scale(0.95)";
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        // Filter and Search Assets
+        function getFilteredAssets() {
+            return assets.filter(a => {
+                const matchesFilter = (currentFilter === "ALL") || 
+                    (currentFilter === "Paused" ? (a.isPaused || a.status === "Paused") : a.status === currentFilter);
+
+                const q = searchQuery.toLowerCase().trim();
+                const matchesSearch = !q || 
+                    a.id.toLowerCase().includes(q) || 
+                    a.status.toLowerCase().includes(q) || 
+                    a.location.toLowerCase().includes(q) ||
+                    (a.plate && a.plate.toLowerCase().includes(q));
+
+                return matchesFilter && matchesSearch;
+            });
+        }
+
+        // Render Left Sidebar List
+        function renderAssetList() {
+            const filtered = getFilteredAssets();
+            listEl.innerHTML = "";
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `
+                    <div style="padding: 24px 16px; text-align: center; color: var(--muted); font-size: 13px;">
+                        No autonomous units match your criteria.
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(a => {
+                const row = document.createElement("div");
+                row.className = "asset-row" + (a.selected ? " selected" : "");
+                row.id = "asset-row-" + a.id;
+
+                const batteryColor = a.battery > 70 ? "var(--green-text)" : (a.battery > 40 ? "var(--gold-text)" : "var(--red)");
+                const statusClass = statusClassMap[a.status] || "hauling";
+                const modeClass = a.autonomous ? "auto" : "manual";
+                const modeLabel = a.autonomous ? "AUTO" : "MANUAL";
+
+                row.innerHTML = `
+                    <div class="asset-row-top">
+                        <div class="asset-title-group">
+                            <span class="asset-status-dot ${statusClass}"></span>
+                            <span class="asset-id">${a.id}</span>
+                            <span class="mode-badge ${modeClass}">${modeLabel}</span>
+                        </div>
+                        <div class="asset-row-actions">
+                            <button class="row-locate-btn" title="Focus camera on map" onclick="event.stopPropagation(); locateAsset('${a.id}');">
+                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+                                <span>Locate</span>
+                            </button>
+                            <span class="badge ${statusClass}">${a.status}</span>
+                        </div>
+                    </div>
+                    <div class="asset-row-bottom">
+                        <span style="color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 165px;" title="${a.location}">${a.location}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="asset-speed-tag">${a.speed} km/h</span>
+                            <span class="battery" style="color: ${batteryColor}; font-weight: 500;">
+                                ${batteryIconSVG} ${a.battery}%
+                            </span>
+                        </div>
+                    </div>
+                `;
+                row.addEventListener("click", () => selectAsset(a.id));
+                listEl.appendChild(row);
+            });
+
+            // Update visible markers on map
+            updateMapMarkersVisibility();
+        }
+
+        // Locate Asset Directly
+        function locateAsset(id) {
+            selectAsset(id);
+            if (currentView === "list") {
+                switchView("map");
+            }
+        }
+
+        // Update Map Markers Visibility based on Filter
+        function updateMapMarkersVisibility() {
+            const filtered = getFilteredAssets();
+            const filteredIds = new Set(filtered.map(f => f.id));
+
+            Object.keys(truckMarkers).forEach(id => {
+                const item = truckMarkers[id];
+                if (item && item.el) {
+                    if (filteredIds.has(id)) {
+                        item.el.style.display = "flex";
+                        item.el.style.opacity = "1";
+                    } else {
+                        item.el.style.display = "none";
+                    }
+                }
+            });
+        }
+
+        // Render Fleet Table View
+        function renderFleetTable() {
+            const tbody = document.getElementById("fleet-table-body");
+            if (!tbody) return;
+
+            tbody.innerHTML = "";
+            assets.forEach(a => {
+                const tr = document.createElement("tr");
+                tr.className = a.selected ? "selected" : "";
+                const statusClass = statusClassMap[a.status] || "hauling";
+
+                tr.innerHTML = `
+                    <td style="font-weight: 700; color: #fff;">${a.id}</td>
+                    <td><span class="badge ${statusClass}">${a.status}</span></td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 50px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
+                                <div style="width: ${a.battery}%; height: 100%; background: ${a.battery > 70 ? 'var(--green-text)' : 'var(--gold-text)'};"></div>
+                            </div>
+                            <span>${a.battery}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 50px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
+                                <div style="width: ${a.fuel}%; height: 100%; background: var(--blue);"></div>
+                            </div>
+                            <span>${a.fuel}%</span>
+                        </div>
+                    </td>
+                    <td>${a.speed} km/h</td>
+                    <td>${a.location}</td>
+                    <td>
+                        <span style="color: ${a.autonomous ? 'var(--blue)' : 'var(--orange-text)'}; font-weight: 600;">
+                            ${a.autonomous ? 'Autonomous' : 'Manual Teleop'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="table-action-btn" onclick="locateAsset('${a.id}')">View on Map</button>
+                    </td>
+                `;
+
+                tr.addEventListener("click", () => selectAsset(a.id));
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Switch between Map View and Fleet Table View
+        function switchView(view) {
+            currentView = view;
+            const tabMap = document.getElementById("topbar-tab-map");
+            const tabList = document.getElementById("topbar-tab-list");
+            const tableContainer = document.getElementById("fleet-table-container");
+
+            if (view === "map") {
+                tabMap.className = "active";
+                tabList.className = "inactive";
+                if (tableContainer) tableContainer.classList.remove("active");
+                if (mapInstance) {
+                    setTimeout(() => mapInstance.resize(), 100);
+                }
+            } else {
+                tabMap.className = "inactive";
+                tabList.className = "active";
+                renderFleetTable();
+                if (tableContainer) tableContainer.classList.add("active");
+            }
+        }
+
+        // Generate History Log for Asset
+        function renderAssetHistory(asset) {
+            const list = document.getElementById("history-timeline-list");
+            if (!list) return;
+
+            const now = new Date();
+            const formatTime = (minutesAgo) => {
+                const d = new Date(now.getTime() - minutesAgo * 60000);
+                return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            };
+
+            list.innerHTML = `
+                <div class="timeline-item">
+                    <div class="timeline-dot green"></div>
+                    <div class="timeline-time">${formatTime(2)}</div>
+                    <div class="timeline-event">Waypoint Checkpoint Reached</div>
+                    <div class="timeline-meta">Location: ${asset.location} • Speed: ${asset.speed} km/h • GPS Lock: 14 Satellites</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-time">${formatTime(18)}</div>
+                    <div class="timeline-event">Payload Scale Recorded</div>
+                    <div class="timeline-meta">Gross: ${asset.payload} tons iron ore • Shovel Unit SH-04</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot cyan"></div>
+                    <div class="timeline-time">${formatTime(35)}</div>
+                    <div class="timeline-event">Autonomous Route Assigned</div>
+                    <div class="timeline-meta">Corridor: ${asset.routeId || 'Main Corridor'} • Collision Avoidance: ACTIVE</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot orange"></div>
+                    <div class="timeline-time">${formatTime(65)}</div>
+                    <div class="timeline-event">Telemetry Safety Handshake OK</div>
+                    <div class="timeline-meta">Firmware v3.2.1 • Latency: 18ms • Battery: ${asset.battery}%</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-time">${formatTime(120)}</div>
+                    <div class="timeline-event">Shift Pre-Op Diagnostics Passed</div>
+                    <div class="timeline-meta">Brakes: PASS • Tire Pressure: 102 PSI • Hydraulics: NOMINAL</div>
+                </div>
+            `;
+        }
+
+        // Update Right Detail Panel
+        function updateDetailPanel(asset) {
+            const h1 = document.getElementById("detail-asset-id");
+            if (h1) h1.textContent = asset.id;
+
+            const badge = document.getElementById("detail-badge");
+            if (badge) {
+                badge.textContent = asset.status;
+                badge.className = "badge " + (statusClassMap[asset.status] || "hauling");
+            }
+
+            const batterySpan = document.getElementById("detail-battery");
+            if (batterySpan) {
+                batterySpan.innerHTML = `${batteryIconSVG} ${asset.battery}%`;
+            }
+
+            const plateEl = document.getElementById("info-plate");
+            if (plateEl) plateEl.textContent = asset.plate || "MN-4521";
+
+            const controlModeEl = document.getElementById("info-control-mode");
+            if (controlModeEl) {
+                controlModeEl.textContent = asset.autonomous ? "Autonomous" : "Manual Remote";
+                controlModeEl.style.color = asset.autonomous ? "var(--blue)" : "var(--orange-text)";
+            }
+
+            // Update action buttons text & state
+            const autonomyBtnText = document.getElementById("btn-autonomy-text");
+            const autonomyBtn = document.getElementById("btn-autonomy");
+            if (autonomyBtnText && autonomyBtn) {
+                if (asset.autonomous) {
+                    autonomyBtnText.textContent = "Disengage Autonomy";
+                    autonomyBtn.classList.remove("active-manual");
+                } else {
+                    autonomyBtnText.textContent = "Engage Autonomy";
+                    autonomyBtn.classList.add("active-manual");
+                }
+            }
+
+            const pauseBtnText = document.getElementById("btn-pause-text");
+            const pauseBtn = document.getElementById("btn-pause-vehicle");
+            if (pauseBtnText && pauseBtn) {
+                if (asset.isPaused) {
+                    pauseBtnText.textContent = "Resume Vehicle";
+                    pauseBtn.classList.add("active-paused");
+                } else {
+                    pauseBtnText.textContent = "Pause Vehicle";
+                    pauseBtn.classList.remove("active-paused");
+                }
+            }
+
+            // Update Diagnostics Telemetry Card (As requested: Unit, Status, Speed, Visibility)
+            const diagUnit = document.getElementById("diag-unit-id");
+            if (diagUnit) diagUnit.textContent = asset.unit || asset.id;
+
+            const diagCallsign = document.getElementById("diag-callsign-id");
+            if (diagCallsign) diagCallsign.textContent = `(${asset.id})`;
+
+            const diagStatusLabel = document.getElementById("diag-status-label");
+            const diagStatusVal = document.getElementById("diag-status-val");
+            const diagStatusPill = document.getElementById("diag-status-pill");
+            const diagCard = document.getElementById("truck-diag-card");
+
+            const isWarn = (asset.condition === "WARNING" || asset.status === "WARNING");
+            const isDanger = (asset.status === "E-Stopped" || asset.battery < 40);
+            const displayStatus = asset.condition || asset.status;
+
+            if (diagStatusLabel) diagStatusLabel.textContent = displayStatus;
+            if (diagStatusVal) {
+                diagStatusVal.textContent = displayStatus;
+                diagStatusVal.className = "diag-val " + (isDanger ? "danger" : (isWarn ? "warning" : "normal"));
+            }
+            if (diagStatusPill) {
+                diagStatusPill.className = "diag-status-pill " + (isDanger ? "danger" : (isWarn ? "warning" : "normal"));
+            }
+            if (diagCard) {
+                diagCard.style.borderLeftColor = isDanger ? "#ef4444" : (isWarn ? "#f59e0b" : "#10b981");
+            }
+
+            const diagSpeedVal = document.getElementById("diag-speed-val");
+            if (diagSpeedVal) diagSpeedVal.textContent = `${asset.speed} km/h`;
+
+            const diagVisVal = document.getElementById("diag-vis-val");
+            if (diagVisVal) {
+                diagVisVal.textContent = asset.visibility || "LOW";
+                diagVisVal.className = "diag-val " + (asset.visibility === "LOW" ? "warn-text" : "normal");
+            }
+
+            const diagCoordsVal = document.getElementById("diag-coords-val");
+            if (diagCoordsVal) {
+                diagCoordsVal.textContent = `${asset.coords[1].toFixed(4)}° N, ${asset.coords[0].toFixed(4)}° E`;
+            }
+
+            const diagSensorVal = document.getElementById("diag-sensor-val");
+            if (diagSensorVal) {
+                diagSensorVal.textContent = asset.visibility === "LOW" ? "LiDAR: 45m • Dust Obscuration" : "LiDAR: 180m • Clear Corridor";
+            }
+
+            // Live status rows
+            const fuelVal = document.getElementById("live-fuel");
+            if (fuelVal) fuelVal.textContent = asset.fuel + "%";
+
+            const fuelFill = document.getElementById("live-fuel-bar");
+            if (fuelFill) fuelFill.style.width = asset.fuel + "%";
+
+            const speedVal = document.getElementById("live-speed");
+            if (speedVal) speedVal.textContent = asset.speed + " km/h";
+
+            const locVal = document.getElementById("live-loc");
+            if (locVal) locVal.textContent = asset.location;
+
+            const payloadVal = document.getElementById("live-payload");
+            if (payloadVal) payloadVal.textContent = (asset.payload || 38.4) + " t";
+
+            // Update history timeline
+            renderAssetHistory(asset);
+        }
+
+        // Select Asset (Bidirectional sync across List, Map, Detail Panel)
+        function selectAsset(id) {
+            let selectedAsset = null;
+
+            assets.forEach(a => {
+                a.selected = (a.id === id);
+                if (a.selected) selectedAsset = a;
+            });
+
+            if (!selectedAsset) return;
+
+            // Reopen detail panel if closed
+            const detailPanel = document.getElementById("detail-panel");
+            const reopenBtn = document.getElementById("btn-reopen-panel");
+            if (detailPanel) detailPanel.classList.remove("hidden");
+            if (reopenBtn) reopenBtn.classList.remove("show");
+
+            // 1. Update left list
+            document.querySelectorAll(".asset-row").forEach(r => r.classList.remove("selected"));
+            const activeRow = document.getElementById("asset-row-" + id);
+            if (activeRow) {
+                activeRow.classList.add("selected");
+                activeRow.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+
+            // 2. Update fleet table if active
+            document.querySelectorAll(".fleet-table tr").forEach(r => r.classList.remove("selected"));
+
+            // 3. Update map markers
+            Object.keys(truckMarkers).forEach(k => {
+                const item = truckMarkers[k];
+                if (k === id) {
+                    item.el.classList.add("selected");
+                } else {
+                    item.el.classList.remove("selected");
+                }
+            });
+
+            // 4. Smooth camera move & map popup
+            if (mapInstance && currentView === "map") {
+                mapInstance.easeTo({
+                    center: selectedAsset.coords,
+                    zoom: Math.max(mapInstance.getZoom(), 14.8),
+                    pitch: 30,
+                    duration: 800
+                });
+
+                if (activeMapPopup) activeMapPopup.remove();
+
+                const isWarn = (selectedAsset.condition === "WARNING" || selectedAsset.status === "WARNING");
+                const statusColor = isWarn ? "#fbbf24" : "#4ade80";
+                const visColor = selectedAsset.visibility === "LOW" ? "#fbbf24" : "#4ade80";
+
+                activeMapPopup = new maptilersdk.Popup({
+                    offset: [0, -20],
+                    closeButton: false,
+                    closeOnClick: false,
+                    className: 'truck-map-popup-wrap'
+                })
+                .setLngLat(selectedAsset.coords)
+                .setHTML(`
+                    <div class="map-truck-popup">
+                        <div class="pop-title">${selectedAsset.unit || selectedAsset.id}</div>
+                        <div>Status: <span style="color: ${statusColor}; font-weight: 700;">${selectedAsset.condition || selectedAsset.status}</span></div>
+                        <div>Speed: <b>${selectedAsset.speed} km/h</b></div>
+                        <div>Visibility: <span style="color: ${visColor}; font-weight: 700;">${selectedAsset.visibility || "LOW"}</span></div>
+                    </div>
+                `)
+                .addTo(mapInstance);
+            }
+
+            // 5. Update right detail panel
+            updateDetailPanel(selectedAsset);
+        }
+
+        // Get currently selected asset
+        function getSelectedAsset() {
+            return assets.find(a => a.selected) || assets[0];
+        }
+
+        // Emergency Stop All Toggle
+        function toggleEmergencyStop() {
+            fleetEStopped = !fleetEStopped;
+            const estopBtn = document.getElementById("btn-estop");
+            const estopText = document.getElementById("estop-text");
+            const banner = document.getElementById("estop-banner");
+
+            if (fleetEStopped) {
+                estopBtn.classList.add("active");
+                estopText.textContent = "RESUME ALL FLEET";
+                if (banner) banner.classList.add("active");
+
+                assets.forEach(a => {
+                    a.prevSpeed = a.speed;
+                    a.prevStatus = a.status;
+                    a.speed = 0;
+                    a.status = "E-Stopped";
+                    a.isPaused = true;
+                });
+
+                showToast("CRITICAL: Emergency Stop activated. All 12 haul units stopped.", "danger");
+            } else {
+                estopBtn.classList.remove("active");
+                estopText.textContent = "Emergency Stop All";
+                if (banner) banner.classList.remove("active");
+
+                assets.forEach(a => {
+                    a.speed = a.prevSpeed !== undefined ? a.prevSpeed : 18;
+                    a.status = a.prevStatus !== undefined ? a.prevStatus : "Hauling";
+                    a.isPaused = false;
+                });
+
+                showToast("Fleet autonomy restored. Resuming haul operations.", "success");
+            }
+
+            renderAssetList();
+            if (currentView === "list") renderFleetTable();
+            updateDetailPanel(getSelectedAsset());
+        }
+
+        // Toggle Autonomy on Selected Vehicle
+        function toggleAutonomy() {
+            const asset = getSelectedAsset();
+            asset.autonomous = !asset.autonomous;
+
+            if (asset.autonomous) {
+                asset.status = asset.prevStatus || "Hauling";
+                showToast(`Unit ${asset.id}: Autonomous navigation re-engaged.`, "success");
+            } else {
+                asset.prevStatus = asset.status;
+                asset.status = "Manual";
+                showToast(`Unit ${asset.id}: Disengaged autonomy. Operator in control.`, "warning");
+            }
+
+            renderAssetList();
+            if (currentView === "list") renderFleetTable();
+            updateDetailPanel(asset);
+        }
+
+        // Toggle Pause on Selected Vehicle
+        function togglePauseVehicle() {
+            const asset = getSelectedAsset();
+            asset.isPaused = !asset.isPaused;
+
+            if (asset.isPaused) {
+                asset.prevSpeed = asset.speed;
+                asset.prevStatus = asset.status;
+                asset.speed = 0;
+                asset.status = "Paused";
+                showToast(`Unit ${asset.id}: Vehicle paused. Safe stop applied.`, "warning");
+            } else {
+                asset.speed = asset.prevSpeed || 18;
+                asset.status = asset.prevStatus || "Hauling";
+                showToast(`Unit ${asset.id}: Resumed travel on ${asset.location}.`, "info");
+            }
+
+            renderAssetList();
+            if (currentView === "list") renderFleetTable();
+            updateDetailPanel(asset);
+        }
+
+        // Setup All UI Event Listeners
+        function setupEventListeners() {
+            // E-Stop Button
+            const estopBtn = document.getElementById("btn-estop");
+            if (estopBtn) estopBtn.addEventListener("click", toggleEmergencyStop);
+
+            // Action Buttons
+            const autonomyBtn = document.getElementById("btn-autonomy");
+            if (autonomyBtn) autonomyBtn.addEventListener("click", toggleAutonomy);
+
+            const pauseBtn = document.getElementById("btn-pause-vehicle");
+            if (pauseBtn) pauseBtn.addEventListener("click", togglePauseVehicle);
+
+            // Detail Panel Close / Reopen
+            const closeBtn = document.getElementById("btn-close-detail");
+            const reopenBtn = document.getElementById("btn-reopen-panel");
+            const detailPanel = document.getElementById("detail-panel");
+
+            if (closeBtn && detailPanel && reopenBtn) {
+                closeBtn.addEventListener("click", () => {
+                    detailPanel.classList.add("hidden");
+                    reopenBtn.classList.add("show");
+                    setTimeout(() => { if (mapInstance) mapInstance.resize(); }, 150);
+                    showToast("Detail panel hidden. Click 'Unit Details' to restore.", "info");
+                });
+
+                reopenBtn.addEventListener("click", () => {
+                    detailPanel.classList.remove("hidden");
+                    reopenBtn.classList.remove("show");
+                    setTimeout(() => { if (mapInstance) mapInstance.resize(); }, 150);
+                });
+            }
+
+            // Detail Panel Tabs (Info vs History)
+            const tabInfo = document.getElementById("tab-detail-info");
+            const tabHistory = document.getElementById("tab-detail-history");
+            const contentInfo = document.getElementById("detail-tab-info-content");
+            const contentHistory = document.getElementById("detail-tab-history-content");
+
+            if (tabInfo && tabHistory && contentInfo && contentHistory) {
+                tabInfo.addEventListener("click", () => {
+                    tabInfo.className = "tab-active";
+                    tabHistory.className = "tab-inactive";
+                    contentInfo.style.display = "block";
+                    contentHistory.style.display = "none";
+                });
+
+                tabHistory.addEventListener("click", () => {
+                    tabInfo.className = "tab-inactive";
+                    tabHistory.className = "tab-active";
+                    contentInfo.style.display = "none";
+                    contentHistory.style.display = "block";
+                    renderAssetHistory(getSelectedAsset());
+                });
+            }
+
+            // Topbar Tabs (Map vs List)
+            const tabMap = document.getElementById("topbar-tab-map");
+            const tabList = document.getElementById("topbar-tab-list");
+            if (tabMap && tabList) {
+                tabMap.addEventListener("click", () => switchView("map"));
+                tabList.addEventListener("click", () => switchView("list"));
+            }
+
+            // Search Box Input
+            const searchInput = document.getElementById("asset-search");
+            if (searchInput) {
+                searchInput.addEventListener("input", (e) => {
+                    searchQuery = e.target.value;
+                    renderAssetList();
+                });
+            }
+
+            // Filter Button & Dropdown
+            const filterBtn = document.getElementById("btn-filter");
+            const filterMenu = document.getElementById("filter-dropdown-menu");
+            if (filterBtn && filterMenu) {
+                filterBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    filterMenu.classList.toggle("show");
+                });
+
+                filterMenu.querySelectorAll(".filter-option").forEach(opt => {
+                    opt.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        filterMenu.querySelectorAll(".filter-option").forEach(o => o.classList.remove("active"));
+                        opt.classList.add("active");
+
+                        currentFilter = opt.getAttribute("data-status");
+                        const label = opt.querySelector("span").textContent;
+                        const filterBtnText = document.getElementById("filter-btn-text");
+                        if (filterBtnText) {
+                            filterBtnText.textContent = currentFilter === "ALL" ? "Filter" : label;
+                        }
+
+                        filterMenu.classList.remove("show");
+                        renderAssetList();
+                        showToast(`Filtered by: ${label}`, "info");
+                    });
+                });
+            }
+
+            // Site Switcher Dropdown
+            const siteTrigger = document.getElementById("site-dropdown-trigger");
+            const siteMenu = document.getElementById("site-dropdown-menu");
+            const currentSiteText = document.getElementById("current-site-name");
+            const hudLocation = document.getElementById("hud-location-text");
+
+            if (siteTrigger && siteMenu) {
+                siteTrigger.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    siteMenu.classList.toggle("show");
+                });
+
+                siteMenu.querySelectorAll(".site-option").forEach(opt => {
+                    opt.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        siteMenu.querySelectorAll(".site-option").forEach(o => o.classList.remove("active"));
+                        opt.classList.add("active");
+
+                        const name = opt.getAttribute("data-name");
+                        const coords = JSON.parse(opt.getAttribute("data-coords"));
+                        const zoom = parseFloat(opt.getAttribute("data-zoom"));
+
+                        if (currentSiteText) currentSiteText.textContent = name;
+                        if (hudLocation) hudLocation.textContent = `${name.toUpperCase()} • 12 UNITS ONLINE`;
+
+                        siteMenu.classList.remove("show");
+
+                        if (mapInstance) {
+                            mapInstance.flyTo({
+                                center: coords,
+                                zoom: zoom,
+                                duration: 1800,
+                                pitch: 25
+                            });
+                        }
+
+                        showToast(`Switched site view to: ${name}`, "success");
+                    });
+                });
+            }
+
+            // Close dropdowns on outside click
+            document.addEventListener("click", () => {
+                if (filterMenu) filterMenu.classList.remove("show");
+                if (siteMenu) siteMenu.classList.remove("show");
+            });
+        }
+
+        // Initialize MapTiler Satellite Map
+        function initMap() {
+            const config = window.APP_CONFIG || {};
+            const apiKey = config.MAPTILER_API_KEY || "po7tI1Ksj7xxtLCTn0Ek";
+
+            maptilersdk.config.apiKey = apiKey;
+
+            mapInstance = new maptilersdk.Map({
+                container: 'mining-map',
+                style: maptilersdk.MapStyle.SATELLITE,
+                center: config.MAP_CENTER || [81.2385, 18.6395],
+                zoom: config.DEFAULT_ZOOM || 14.3,
+                pitch: config.DEFAULT_PITCH || 25,
+                bearing: config.DEFAULT_BEARING || -15,
+                navigationControl: false,
+                geolocateControl: false,
+                terrainControl: false
+            });
+
+            // Compact navigation control
+            mapInstance.addControl(new maptilersdk.NavigationControl({
+                showCompass: true,
+                showZoom: true,
+                visualizePitch: true
+            }), 'top-right');
+
+            // Reset view button handler
+            const resetBtn = document.getElementById('btn-reset-view');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    mapInstance.easeTo({
+                        center: config.MAP_CENTER || [81.2385, 18.6395],
+                        zoom: config.DEFAULT_ZOOM || 14.3,
+                        pitch: config.DEFAULT_PITCH || 25,
+                        bearing: config.DEFAULT_BEARING || -15,
+                        duration: 1000
+                    });
+                    showToast("Camera reset to overview.", "info");
+                });
+            }
+
+            // Load map layers on ready
+            mapInstance.on('load', () => {
+                // 1. Add Mining Operational Zones
+                mapInstance.addSource('mining-zones-source', {
+                    type: 'geojson',
+                    data: miningZonesGeoJSON
+                });
+
+                // Zone semi-transparent fill
+                mapInstance.addLayer({
+                    id: 'mining-zones-fill',
+                    type: 'fill',
+                    source: 'mining-zones-source',
+                    paint: {
+                        'fill-color': ['get', 'color'],
+                        'fill-opacity': 0.16
+                    }
+                });
+
+                // Zone border line
+                mapInstance.addLayer({
+                    id: 'mining-zones-line',
+                    type: 'line',
+                    source: 'mining-zones-source',
+                    paint: {
+                        'line-color': ['get', 'color'],
+                        'line-width': 1.6,
+                        'line-dasharray': [3, 2],
+                        'line-opacity': 0.85
+                    }
+                });
+
+                // Zone labels
+                mapInstance.addLayer({
+                    id: 'mining-zones-labels',
+                    type: 'symbol',
+                    source: 'mining-zones-source',
+                    layout: {
+                        'text-field': ['get', 'name'],
+                        'text-size': 10,
+                        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                        'text-anchor': 'center',
+                        'text-letter-spacing': 0.08
+                    },
+                    paint: {
+                        'text-color': '#f4f4f5',
+                        'text-halo-color': '#09090b',
+                        'text-halo-width': 1.5
+                    }
+                });
+
+                // 2. Add Haul Routes (GeoJSON)
+                mapInstance.addSource('haul-routes-source', {
+                    type: 'geojson',
+                    data: haulRoutesGeoJSON
+                });
+
+                // Outer Green Glow
+                mapInstance.addLayer({
+                    id: 'haul-routes-glow',
+                    type: 'line',
+                    source: 'haul-routes-source',
+                    paint: {
+                        'line-color': '#00ff88',
+                        'line-width': 5.5,
+                        'line-opacity': 0.28,
+                        'line-blur': 2.5
+                    }
+                });
+
+                // Inner Operational Route Line
+                mapInstance.addLayer({
+                    id: 'haul-routes-core',
+                    type: 'line',
+                    source: 'haul-routes-source',
+                    paint: {
+                        'line-color': '#10b981',
+                        'line-width': 2.2,
+                        'line-opacity': 0.95
+                    }
+                });
+
+                // 3. Create Custom Haul Truck Markers
+                assets.forEach(a => {
+                    const el = document.createElement("div");
+                    el.className = "truck-marker-el" + (a.selected ? " selected" : "");
+                    el.id = "marker-" + a.id;
+                    el.innerHTML = `
+                        <div class="truck-selection-pulse"></div>
+                        <div class="truck-icon-wrap" style="transform: rotate(${a.heading}deg);">
+                            ${haulTruckSVG}
+                        </div>
+                        <div class="truck-label-tag">${a.id}</div>
+                    `;
+
+                    el.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        selectAsset(a.id);
+                    });
+
+                    const marker = new maptilersdk.Marker({ element: el, anchor: 'center' })
+                        .setLngLat(a.coords)
+                        .addTo(mapInstance);
+
+                    truckMarkers[a.id] = { marker, el, asset: a };
+                });
+
+                // Open initial map popup for selected unit
+                const initSelected = getSelectedAsset();
+                if (initSelected) {
+                    selectAsset(initSelected.id);
+                }
+            });
+
+            // Responsive Map Resize Observer
+            const centerAreaEl = document.querySelector('.center-area');
+            if (centerAreaEl && window.ResizeObserver) {
+                const resizeObserver = new ResizeObserver(() => {
+                    if (mapInstance) mapInstance.resize();
+                });
+                resizeObserver.observe(centerAreaEl);
+            }
+
+            // Realistic Telemetry Simulation Loop (Subtle, smooth movement along roads)
+            setInterval(() => {
+                if (fleetEStopped) return; // Halt simulation during E-Stop
+
+                assets.forEach(a => {
+                    // Only move active moving trucks (speed > 0 and not paused)
+                    if (a.speed > 0 && !a.isPaused && truckMarkers[a.id]) {
+                        const jitterDist = 0.00004; // subtle drift along road
+                        const rad = (a.heading - 90) * (Math.PI / 180);
+                        a.coords[0] += Math.cos(rad) * jitterDist * (Math.random() * 0.4 + 0.8);
+                        a.coords[1] -= Math.sin(rad) * jitterDist * (Math.random() * 0.4 + 0.8);
+
+                        truckMarkers[a.id].marker.setLngLat(a.coords);
+                        if (activeMapPopup && a.selected) {
+                            activeMapPopup.setLngLat(a.coords);
+                        }
+                    }
+                });
+            }, 2500);
+        }
+
+        // Initialize application
+        function initApp() {
+            renderAssetList();
+            setupEventListeners();
+            initMap();
+            updateDetailPanel(getSelectedAsset());
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initApp);
+        } else {
+            initApp();
+        }
+    </script>
+
+</body>
+
+</html>
