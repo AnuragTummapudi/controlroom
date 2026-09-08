@@ -4,8 +4,7 @@
   "description": "Drishti Vayu - Real-Time Autonomous Mining Control Room",
   "scripts": {
     "start": "npx serve .",
-    "dev": "npx serve .",
-    "build": "echo 'Static assets ready for deployment'"
+    "dev": "npx serve ."
   },
   "keywords": [
     "mining",
