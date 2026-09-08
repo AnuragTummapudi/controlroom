@@ -11,7 +11,7 @@ An enterprise-grade autonomous mining asset management and fleet telemetry contr
 - **Operational Zones**: Semi-transparent polygon boundaries for Excavation Pits, Loading Benches, Waste Rock Dumps, and Staging Yards.
 - **Active Haul Fleet**: Custom SVG yellow haul-truck markers oriented with true heading bearings and subtle telemetry simulation.
 - **Bidirectional Fleet Synchronization**: Selecting any vehicle in the left asset list smoothly shifts and focuses the radar camera and updates real-time telemetry details. Selecting markers on the map directly synchronizes the list and right-hand telemetry deck.
-- **Interactive 3D Digital Twin**: Embedded Volvo A40G articulated haul truck GLB model loaded via Google's native `<model-viewer>`.
+- **Interactive 3D Digital Twin**: Embedded Komatsu HD-465-7EO haul truck GLB model loaded via Google's native `<model-viewer>`.
 
 ---
 
@@ -73,7 +73,7 @@ The repository is fully configured for zero-config Vercel deployment:
   3. Leave all default settings (Framework Preset: *Other*, Root Directory: `./`).
   4. Click **Deploy**.
 - **Pre-configured Features**:
-  - `vercel.json` provides MIME type headers (`model/gltf-binary`) for the 32MB Volvo A40G 3D model.
+  - `vercel.json` provides MIME type headers (`model/gltf-binary`) for the 20MB Komatsu HD-465-7EO 3D model.
   - The development MapTiler key is embedded in `config.js` and `index.html` for immediate operation.
 
 ### 6. MapTiler Satellite Imagery
